@@ -12,6 +12,7 @@ struct CartDetailView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .padding()
+                .foregroundColor(.black) // Set title color to black
 
             Text("Cart ID: \(cartItem.id)")
                 .font(.headline)
@@ -23,12 +24,16 @@ struct CartDetailView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("UPC: \(itemDetail.upc)")
                         .font(.subheadline)
+                        .foregroundColor(.black) // Set text color to black
                     Text("Quantity: \(itemDetail.quantity)")
                         .font(.subheadline)
+                        .foregroundColor(.black) // Set text color to black
                     Text("Price: \(String(format: "%.2f", itemDetail.price))")
                         .font(.subheadline)
+                        .foregroundColor(.black) // Set text color to black
                     Text("Subtotal: \(String(format: "%.2f", itemDetail.subtotal))")
                         .font(.subheadline)
+                        .foregroundColor(.black) // Set text color to black
                     Divider()
                 }
                 .padding()
