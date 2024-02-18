@@ -17,6 +17,7 @@ struct CartDetailView: View {
                 .font(.headline)
                 .fontWeight(.bold)
                 .padding(.bottom, 10)
+                .foregroundColor(.black) // Set text color to black
 
             ForEach(cartItem.items) { itemDetail in
                 VStack(alignment: .leading, spacing: 8) {
@@ -35,12 +36,12 @@ struct CartDetailView: View {
 
             if cartItemViewModel.arePricesLoaded {
                 Text("Total: $\(String(format: "%.2f", cartItem.items.reduce(0.0) { $0 + $1.subtotal }))")
-                    .foregroundColor(.gray)
+                    .foregroundColor(.black) // Set text color to black
                     .font(.subheadline)
                     .padding(.top, 10)
             } else {
                 Text("Total: 計算中...")
-                    .foregroundColor(.gray)
+                    .foregroundColor(.black) // Set text color to black
                     .font(.subheadline)
                     .padding(.top, 10)
             }
@@ -63,5 +64,6 @@ struct CartDetailView: View {
             Spacer()
         }
         .padding()
+        .background(Color.white) // Set background color to white
     }
 }
