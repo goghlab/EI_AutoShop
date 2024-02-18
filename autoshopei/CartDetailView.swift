@@ -4,42 +4,64 @@ import FirebaseAuth
 
 struct CartDetailView: View {
     var cartItem: CartItem
-
-    @State private var prices: [String: Double] = [:]
+    var cartItemViewModel: CartItemViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Order Details")
+        VStack {
+            Text("Cart Detail")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .padding()
 
+            Text("Cart ID: \(cartItem.id)")
+                .font(.headline)
+                .fontWeight(.bold)
+                .padding(.bottom, 10)
+
             ForEach(cartItem.items) { itemDetail in
-                HStack {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("貨品ID: \(itemDetail.upc)")
-                            .font(.headline)
-                            .fontWeight(.bold)
-
-                        Text("數量: \(itemDetail.quantity)")
-                            .foregroundColor(.gray)
-
-                        // Place PriceView here to ensure proper nesting
-                        PriceView(upc: itemDetail.upc)
-                    }
-
-                    Spacer()
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("UPC: \(itemDetail.upc)")
+                        .font(.subheadline)
+                    Text("Quantity: \(itemDetail.quantity)")
+                        .font(.subheadline)
+                    Text("Price: \(String(format: "%.2f", itemDetail.price))")
+                        .font(.subheadline)
+                    Text("Subtotal: \(String(format: "%.2f", itemDetail.subtotal))")
+                        .font(.subheadline)
+                    Divider()
                 }
                 .padding()
-                .background(Color.white)
-                .cornerRadius(10)
-                .shadow(radius: 3)
-                .padding(.vertical, 4)
             }
+
+            if cartItemViewModel.arePricesLoaded {
+                Text("Total: $\(String(format: "%.2f", cartItem.items.reduce(0.0) { $0 + $1.subtotal }))")
+                    .foregroundColor(.gray)
+                    .font(.subheadline)
+                    .padding(.top, 10)
+            } else {
+                Text("Total: 計算中...")
+                    .foregroundColor(.gray)
+                    .font(.subheadline)
+                    .padding(.top, 10)
+            }
+
+            // Pay Now Button
+            Button(action: {
+                // Add your logic to handle the "Pay Now" action
+                // This could include navigating to a payment screen or triggering a payment process
+                // Example: cartItemViewModel.handlePayNow()
+            }) {
+                Text("Pay Now")
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.blue)
+                    .cornerRadius(10)
+            }
+            .padding(.top, 20)
 
             Spacer()
         }
         .padding()
-        .navigationBarTitle("Cart Details", displayMode: .inline)
     }
 }
