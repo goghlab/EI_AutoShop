@@ -6,15 +6,17 @@ struct CartDetailView: View {
     var cartItem: CartItem
     var cartItemViewModel: CartItemViewModel
 
+    @State private var isPaymentSuccessPresented = false
+
     var body: some View {
         VStack {
-            Text("Cart Detail")
-                .font(.largeTitle)
+            Text("購物車詳情")
+                .font(.title)
                 .fontWeight(.bold)
                 .padding()
                 .foregroundColor(.black) // Set title color to black
 
-            Text("Cart ID: \(cartItem.id)")
+            Text("購物車ID: \(cartItem.id)")
                 .font(.headline)
                 .fontWeight(.bold)
                 .padding(.bottom, 10)
@@ -22,16 +24,16 @@ struct CartDetailView: View {
 
             ForEach(cartItem.items) { itemDetail in
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("UPC: \(itemDetail.upc)")
+                    Text("商品ID: \(itemDetail.upc)")
                         .font(.subheadline)
                         .foregroundColor(.black) // Set text color to black
-                    Text("Quantity: \(itemDetail.quantity)")
+                    Text("數量: \(itemDetail.quantity)")
                         .font(.subheadline)
                         .foregroundColor(.black) // Set text color to black
-                    Text("Price: \(String(format: "%.2f", itemDetail.price))")
+                    Text("售價: \(String(format: "%.2f", itemDetail.price))")
                         .font(.subheadline)
                         .foregroundColor(.black) // Set text color to black
-                    Text("Subtotal: \(String(format: "%.2f", itemDetail.subtotal))")
+                    Text("小計: \(String(format: "%.2f", itemDetail.subtotal))")
                         .font(.subheadline)
                         .foregroundColor(.black) // Set text color to black
                     Divider()
@@ -40,7 +42,7 @@ struct CartDetailView: View {
             }
 
             if cartItemViewModel.arePricesLoaded {
-                Text("Total: $\(String(format: "%.2f", cartItem.items.reduce(0.0) { $0 + $1.subtotal }))")
+                Text("總計: $\(String(format: "%.2f", cartItem.items.reduce(0.0) { $0 + $1.subtotal }))")
                     .foregroundColor(.black) // Set text color to black
                     .font(.subheadline)
                     .padding(.top, 10)
@@ -52,17 +54,20 @@ struct CartDetailView: View {
             }
 
             // Pay Now Button
-            Button(action: {
-                // Add your logic to handle the "Pay Now" action
-                // This could include navigating to a payment screen or triggering a payment process
-                // Example: cartItemViewModel.handlePayNow()
-            }) {
-                Text("Pay Now")
-                    .foregroundColor(.white)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.blue)
-                    .cornerRadius(10)
+            NavigationLink(destination: PaymentSuccessView(), isActive: $isPaymentSuccessPresented) {
+                Button(action: {
+                    // Add your logic to handle the "Pay Now" action
+                    // This could include navigating to a payment screen or triggering a payment process
+                    // Example: cartItemViewModel.handlePayNow()
+                    isPaymentSuccessPresented = true
+                }) {
+                    Text("立即付款")
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                }
             }
             .padding(.top, 20)
 

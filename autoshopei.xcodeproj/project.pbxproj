@@ -25,6 +25,7 @@
 		438E83722B6836D20023AEF9 /* ShareButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 438E83702B6836D20023AEF9 /* ShareButtonStyle.swift */; };
 		43A8FA6E2B81E31C0047320B /* PriceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43A8FA6D2B81E31C0047320B /* PriceView.swift */; };
 		43B0BC4E2B8228450031C652 /* CartDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43B0BC4D2B8228450031C652 /* CartDetailView.swift */; };
+		43B0BC502B8476000031C652 /* PaymentSuscessView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43B0BC4F2B8476000031C652 /* PaymentSuscessView.swift */; };
 		75644BBCD35ED1FDA68D79F7 /* Pods_autoshopeiTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64E5B36BFBAE3EB5D6EC5AD7 /* Pods_autoshopeiTests.framework */; };
 		BC9FCE7E7BEF37F1AAD1EC40 /* Pods_autoshopei_autoshopeiUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F489C21B25EE36E98A542765 /* Pods_autoshopei_autoshopeiUITests.framework */; };
 		D3A142A1BDE545C341394E18 /* Pods_autoshopei.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7152D1F867A81B5584585CA5 /* Pods_autoshopei.framework */; };
@@ -69,6 +70,7 @@
 		438E83702B6836D20023AEF9 /* ShareButtonStyle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ShareButtonStyle.swift; path = ../../iOS/AutoShop/ShareButtonStyle.swift; sourceTree = "<group>"; };
 		43A8FA6D2B81E31C0047320B /* PriceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceView.swift; sourceTree = "<group>"; };
 		43B0BC4D2B8228450031C652 /* CartDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartDetailView.swift; sourceTree = "<group>"; };
+		43B0BC4F2B8476000031C652 /* PaymentSuscessView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentSuscessView.swift; sourceTree = "<group>"; };
 		4DFBD6C455FACAB5E3DF4F33 /* Pods-autoshopei-autoshopeiUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-autoshopei-autoshopeiUITests.release.xcconfig"; path = "Target Support Files/Pods-autoshopei-autoshopeiUITests/Pods-autoshopei-autoshopeiUITests.release.xcconfig"; sourceTree = "<group>"; };
 		64E5B36BFBAE3EB5D6EC5AD7 /* Pods_autoshopeiTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_autoshopeiTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7152D1F867A81B5584585CA5 /* Pods_autoshopei.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_autoshopei.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -139,6 +141,7 @@
 				438E83392B682FAF0023AEF9 /* ContentView.swift */,
 				438E83662B6836BC0023AEF9 /* CartView.swift */,
 				43B0BC4D2B8228450031C652 /* CartDetailView.swift */,
+				43B0BC4F2B8476000031C652 /* PaymentSuscessView.swift */,
 				43A8FA6D2B81E31C0047320B /* PriceView.swift */,
 				438E83672B6836BC0023AEF9 /* LoginView.swift */,
 				438E83652B6836BC0023AEF9 /* MyqrcodeView.swift */,
@@ -439,6 +442,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				43B0BC502B8476000031C652 /* PaymentSuscessView.swift in Sources */,
 				438E83712B6836D20023AEF9 /* SignupView.swift in Sources */,
 				438E836A2B6836BC0023AEF9 /* LoginView.swift in Sources */,
 				438E83692B6836BC0023AEF9 /* CartView.swift in Sources */,
