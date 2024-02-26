@@ -5,7 +5,8 @@ import FirebaseAuth
 struct CartDetailView: View {
     var cartItem: CartItem
     var cartItemViewModel: CartItemViewModel
-
+    
+    @EnvironmentObject var paymentViewModel: PaymentViewModel
     @State private var isPaymentSuccessPresented = false
 
     var body: some View {
@@ -14,66 +15,64 @@ struct CartDetailView: View {
                 .font(.title)
                 .fontWeight(.bold)
                 .padding()
-                .foregroundColor(.black) // Set title color to black
+                .foregroundColor(.black)
 
             Text("購物車ID: \(cartItem.id)")
                 .font(.headline)
                 .fontWeight(.bold)
                 .padding(.bottom, 10)
-                .foregroundColor(.black) // Set text color to black
+                .foregroundColor(.black)
 
             ForEach(cartItem.items) { itemDetail in
                 VStack(alignment: .leading, spacing: 8) {
                     Text("商品ID: \(itemDetail.upc)")
                         .font(.subheadline)
-                        .foregroundColor(.black) // Set text color to black
+                        .foregroundColor(.black)
                     Text("數量: \(itemDetail.quantity)")
                         .font(.subheadline)
-                        .foregroundColor(.black) // Set text color to black
+                        .foregroundColor(.black)
                     Text("售價: \(String(format: "%.2f", itemDetail.price))")
                         .font(.subheadline)
-                        .foregroundColor(.black) // Set text color to black
+                        .foregroundColor(.black)
                     Text("小計: \(String(format: "%.2f", itemDetail.subtotal))")
                         .font(.subheadline)
-                        .foregroundColor(.black) // Set text color to black
+                        .foregroundColor(.black)
                     Divider()
                 }
                 .padding()
             }
 
             if cartItemViewModel.arePricesLoaded {
-                Text("總計: $\(String(format: "%.2f", cartItem.items.reduce(0.0) { $0 + $1.subtotal }))")
-                    .foregroundColor(.black) // Set text color to black
+                Text("總計: $\(paymentViewModel.totalAmount)")
+                    .foregroundColor(.black)
                     .font(.subheadline)
                     .padding(.top, 10)
+                    .onAppear {
+                        paymentViewModel.updateTotalAmount(cartItems: cartItem.items)
+                    }
             } else {
                 Text("Total: 計算中...")
-                    .foregroundColor(.black) // Set text color to black
+                    .foregroundColor(.black)
                     .font(.subheadline)
                     .padding(.top, 10)
             }
 
             // Pay Now Button
-            NavigationLink(destination: PaymentSuccessView(), isActive: $isPaymentSuccessPresented) {
-                Button(action: {
-                    // Add your logic to handle the "Pay Now" action
-                    // This could include navigating to a payment screen or triggering a payment process
-                    // Example: cartItemViewModel.handlePayNow()
-                    isPaymentSuccessPresented = true
-                }) {
-                    Text("立即付款")
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                }
+            Button(action: {
+                paymentViewModel.initiatePayment(cartItems: cartItem.items)
+            }) {
+                Text("立即付款")
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color.blue)
+                    .cornerRadius(10)
             }
             .padding(.top, 20)
 
             Spacer()
         }
         .padding()
-        .background(Color.white) // Set background color to white
+        .background(Color.white)
     }
 }
