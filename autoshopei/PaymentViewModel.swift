@@ -46,7 +46,9 @@ class PaymentViewModel: ObservableObject {
     // Function to send the payment initiation request to the server
     private func initiatePaymentRequest() {
         // URL of your server's /initiate-payment endpoint
+
         let urlString = "https://payment.everything-intelligence.com/initiate-payment"
+
 
         // Create the URL
         if let url = URL(string: urlString) {

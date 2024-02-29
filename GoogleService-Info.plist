@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>609909198676-pf36724bo978i81mem83ipfvpfjma22v.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.609909198676-pf36724bo978i81mem83ipfvpfjma22v</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDQ8zj3mvKlj8zew8FEvXyvcP-8wt57NhM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>609909198676</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.ei.autoshopApp</string>
+	<key>PROJECT_ID</key>
+	<string>ei-website-103a4</string>
+	<key>STORAGE_BUCKET</key>
+	<string>ei-website-103a4.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false/>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false/>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true/>
+	<key>IS_GCM_ENABLED</key>
+	<true/>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true/>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:609909198676:ios:c8e9cdecd35961b27202c1</string>
+	<key>DATABASE_URL</key>
+	<string>https://ei-website-103a4-default-rtdb.asia-southeast1.firebasedatabase.app</string>
+</dict>
+</plist>
