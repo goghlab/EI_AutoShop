@@ -1,9 +1,27 @@
 import Foundation
 import FirebaseAuth
 
+struct PaymentResponse: Codable {
+    let code: String
+    let message: String
+    let uid: String
+    let totalAmount: String
+    let token: String
+    let checkoutURL: String
+    let expiredAt: String
+
+    enum CodingKeys: String, CodingKey {
+        case code, message, uid, totalAmount, token
+        case checkoutURL = "checkout_url"
+        case expiredAt = "expired_at"
+    }
+}
+
 class PaymentViewModel: ObservableObject {
     @Published var totalAmount: String = "0.00"
     @Published var uid: String = ""
+    @Published var checkoutURL: String? = nil // New property to store checkout URL
+    @Published var isCheckoutURLAvailable: Bool = false // Add this line
     
     // Function to update totalAmount based on cart items
     func updateTotalAmount(cartItems: [CartItemDetail]) {
@@ -43,44 +61,72 @@ class PaymentViewModel: ObservableObject {
         initiatePaymentRequest()
     }
 
-    // Function to send the payment initiation request to the server
     private func initiatePaymentRequest() {
         // URL of your server's /initiate-payment endpoint
+        guard var urlComponents = URLComponents(string: "https://payment.everything-intelligence.com/initiate-payment") else {
+            print("Error: Invalid URL")
+            return
+        }
 
-        let urlString = "https://payment.everything-intelligence.com/initiate-payment"
+        // Set UID before initiating payment
+        setUID()
 
+        // Ensure UID is set before initiating payment
+        guard !uid.isEmpty else {
+            print("Error: UID is not set.")
+            return
+        }
 
-        // Create the URL
-        if let url = URL(string: urlString) {
-            // Prepare the request body
-            let requestBody: [String: Any] = [
-                "uid": uid,
-                "totalAmount": totalAmount
-            ]
+        // Append the Referer header
+        urlComponents.queryItems = [
+            URLQueryItem(name: "Referer", value: "https://Payment.everything-intelligence.com"),
+        ]
 
-            // Convert the request body to Data
-            if let jsonData = try? JSONSerialization.data(withJSONObject: requestBody) {
-                // Create the URLRequest
-                var request = URLRequest(url: url)
-                request.httpMethod = "POST"
-                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-                request.httpBody = jsonData
+        guard let url = urlComponents.url else {
+            print("Error: Invalid URL with Referer header")
+            return
+        }
 
-                // Create a URLSession task to send the request
-                let task = URLSession.shared.dataTask(with: request) { (data, response, error) in
-                    // Handle the response from the server (You can implement as needed)
-                    if let data = data {
-                        let responseData = String(data: data, encoding: .utf8)
-                        print("Server Response: \(responseData ?? "No response data")")
+        // Prepare the request body
+        let requestBody: [String: Any] = [
+            "uid": uid,
+            "totalAmount": totalAmount
+        ]
+
+        // Convert the request body to Data
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: requestBody) else {
+            print("Error: Failed to serialize JSON data")
+            return
+        }
+
+        // Create the URLRequest
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+
+        // Create a URLSession task to send the request
+        let task = URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) in
+            // Handle the response from the server
+            if let data = data {
+                do {
+                    let responseData = try JSONDecoder().decode(PaymentResponse.self, from: data)
+                    print("Server Response: \(responseData)")
+
+                    // Set the checkout URL on the main thread
+                    DispatchQueue.main.async {
+                        self?.checkoutURL = responseData.checkoutURL
                     }
-                    if let error = error {
-                        print("Error: \(error.localizedDescription)")
-                    }
+                } catch {
+                    print("Error decoding response: \(error)")
                 }
-
-                // Start the URLSession task
-                task.resume()
+            }
+            if let error = error {
+                print("Error: \(error.localizedDescription)")
             }
         }
+
+        // Start the URLSession task
+        task.resume()
     }
 }

@@ -1,6 +1,4 @@
 import SwiftUI
-import FirebaseFirestore
-import FirebaseAuth
 
 struct CartDetailView: View {
     var cartItem: CartItem
@@ -8,7 +6,8 @@ struct CartDetailView: View {
     
     @EnvironmentObject var paymentViewModel: PaymentViewModel
     @State private var isPaymentSuccessPresented = false
-
+    @State private var shouldOpenCheckoutURL: Bool = false
+    
     var body: some View {
         VStack {
             Text("購物車詳情")
@@ -74,5 +73,16 @@ struct CartDetailView: View {
         }
         .padding()
         .background(Color.white)
+        .onReceive(paymentViewModel.$checkoutURL) { newCheckoutURL in
+            // Check if a new checkoutURL is available
+            if let url = newCheckoutURL, !url.isEmpty {
+                shouldOpenCheckoutURL = true
+            }
+        }
+        .sheet(isPresented: $shouldOpenCheckoutURL) {
+            if let checkoutURL = paymentViewModel.checkoutURL {
+                WebView(urlString: checkoutURL)
+            }
+        }
     }
 }
