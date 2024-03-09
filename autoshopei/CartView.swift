@@ -121,9 +121,10 @@ struct CartView: View {
 struct CartItemView: View {
     var cartItem: CartItem
     @ObservedObject var cartItemViewModel: CartItemViewModel
+    @State private var cartItemID: String = ""
 
     var body: some View {
-        NavigationLink(destination: CartDetailView(cartItem: cartItem, cartItemViewModel: cartItemViewModel)) {
+        NavigationLink(destination: CartDetailView(cartId: $cartItemID, cartItem: cartItem, cartItemViewModel: cartItemViewModel)) {
             HStack {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("購物車ID: \(cartItem.id)")
@@ -138,6 +139,9 @@ struct CartItemView: View {
             .cornerRadius(10)
             .shadow(radius: 3)
             .padding(.vertical, 4)
+        }
+        .onAppear {
+            self.cartItemID = cartItem.id
         }
     }
 }

@@ -3,6 +3,7 @@ import WebKit
 
 struct WebView: UIViewRepresentable {
     let urlString: String
+    let referer: String // Add a property for referer
 
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
@@ -12,7 +13,11 @@ struct WebView: UIViewRepresentable {
 
     func updateUIView(_ uiView: WKWebView, context: Context) {
         if let url = URL(string: urlString) {
-            let request = URLRequest(url: url)
+            var request = URLRequest(url: url)
+
+            // Set the referer header
+            request.setValue(referer, forHTTPHeaderField: "Referer")
+
             uiView.load(request)
         }
     }
