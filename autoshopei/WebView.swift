@@ -33,8 +33,19 @@ struct WebView: UIViewRepresentable {
             self.parent = parent
         }
 
+        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+            print("WebView started navigation")
+            if let url = webView.url {
+                print("Navigating to URL: \(url)")
+            }
+        }
+
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            // Additional handling after the web view finishes loading
+            print("WebView finished loading")
+        }
+
+        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+            print("WebView failed with error: \(error.localizedDescription)")
         }
     }
 }
