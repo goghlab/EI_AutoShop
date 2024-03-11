@@ -27,30 +27,24 @@ class PaymentViewModel: ObservableObject {
         self.cartId = cartId
     }
     
-    // Function to initiate the payment process
-    func initiatePayment(cartItems: [CartItemDetail]) {
-        // Fetch the CartId dynamically based on the current user's UID and cart transaction
-        fetchCartIdForCurrentUser { [weak self] cartId in
-            guard let self = self else { return }
-            
-            // Set Cart ID before initiating payment
-            self.setCartId(cartId: cartId)
-            
-            // Ensure Cart ID is set before initiating payment
-            guard !self.cartId.isEmpty else {
-                print("Error: Cart ID is not set.")
-                return
-            }
-            
-            // Update totalAmount before initiating payment
-            self.updateTotalAmount(cartItems: cartItems)
-            
-            // Print statement for debugging
-            print("Initiating payment for Cart ID: \(self.cartId), Amount: \(self.totalAmount)")
-            
-            // Call the function to send the payment initiation request
-            self.initiatePaymentRequest()
+    func initiatePayment(cartId: String, cartItems: [CartItemDetail]) {
+        // Set Cart ID before initiating payment
+        self.setCartId(cartId: cartId)
+
+        // Ensure Cart ID is set before initiating payment
+        guard !self.cartId.isEmpty else {
+            print("Error: Cart ID is not set.")
+            return
         }
+
+        // Update totalAmount before initiating payment
+        self.updateTotalAmount(cartItems: cartItems)
+
+        // Print statement for debugging
+        print("Initiating payment for Cart ID: \(self.cartId), Amount: \(self.totalAmount)")
+
+        // Call the function to send the payment initiation request
+        self.initiatePaymentRequest()
     }
     
     // Function to fetch CartId for the current user

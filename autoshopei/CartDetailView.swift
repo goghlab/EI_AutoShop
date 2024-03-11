@@ -56,9 +56,8 @@ struct CartDetailView: View {
                     .padding(.top, 10)
             }
 
-            // Pay Now Button
             Button(action: {
-                paymentViewModel.initiatePayment(cartItems: cartItem.items)
+                paymentViewModel.initiatePayment(cartId: cartItem.id, cartItems: cartItem.items)
             }) {
                 Text("立即付款")
                     .foregroundColor(.white)
