@@ -8,7 +8,49 @@ struct PaymentResponse: Codable {
     let cartId: String
     let totalAmount: String
     let checkout_url: String // Corrected property name
+    let transaction: TransactionDetail?
 }
+
+struct TransactionDetail: Codable {
+    let id: String
+    let transaction_id: String
+    let gateway_code: String
+    let reference_id: String
+    let custom_id: String
+    let payment_method: String
+    let currency: String
+    let amount: String
+    let charge: String
+    let refunded: String
+    let refund_charge: String
+    let net: String
+    let tips: String
+    let status: String
+    let paid_at: String
+    let updated_at: String
+}
+
+    enum CodingKeys: String, CodingKey {
+            case id
+            case transaction_id
+            case gateway_code
+            case reference_id
+            case custom_id
+            case payment_method
+            case currency
+            case amount
+            case charge
+            case refunded
+            case refund_charge
+            case net
+            case tips
+            case status
+            case paid_at
+            case updated_at
+            case builtAt = "builtAt"
+            case cpCartId = "cpCartId"
+            case items
+        }
 
 class PaymentViewModel: ObservableObject {
     @Published var totalAmount: String = "0.00"
@@ -30,19 +72,19 @@ class PaymentViewModel: ObservableObject {
     func initiatePayment(cartId: String, cartItems: [CartItemDetail]) {
         // Set Cart ID before initiating payment
         self.setCartId(cartId: cartId)
-
+        
         // Ensure Cart ID is set before initiating payment
         guard !self.cartId.isEmpty else {
             print("Error: Cart ID is not set.")
             return
         }
-
+        
         // Update totalAmount before initiating payment
         self.updateTotalAmount(cartItems: cartItems)
-
+        
         // Print statement for debugging
         print("Initiating payment for Cart ID: \(self.cartId), Amount: \(self.totalAmount)")
-
+        
         // Call the function to send the payment initiation request
         self.initiatePaymentRequest()
     }
@@ -74,53 +116,61 @@ class PaymentViewModel: ObservableObject {
     }
     
     
-    // Function to initiate the payment request with a specified cartId
     private func initiatePaymentRequest() {
         // URL of your server's /initiate-payment endpoint
         guard let url = URL(string: "https://payment.everything-intelligence.com/initiate-payment") else {
             print("Error: Invalid URL")
             return
         }
-        
+
         // Print statement for debugging
         print("Initiating payment request with Cart ID: \(self.cartId)")
-        
+
         // Append the Referer header
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         // Prepare the request body
         let requestBody: [String: Any] = [
             "cartId": cartId,
             "totalAmount": totalAmount
         ]
-        
+
         // Convert the request body to Data
         guard let jsonData = try? JSONSerialization.data(withJSONObject: requestBody) else {
             print("Error: Failed to serialize JSON data")
             return
         }
-        
+
         // Attach the JSON data to the request
         request.httpBody = jsonData
-        
+
         // Create a URLSession task to send the request
         let task = URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) in
             // Handle the response from the server
             if let data = data {
                 // Print the raw server response
                 print("Raw Server Response: \(String(data: data, encoding: .utf8) ?? "")")
-                
+
                 // Check for a successful HTTP status code (2xx)
                 if let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) {
                     do {
                         let responseData = try JSONDecoder().decode(PaymentResponse.self, from: data)
                         print("Server Response: \(responseData)")
-                        
+
                         // Set the checkout URL received from the server
                         DispatchQueue.main.async {
                             self?.checkoutURL = responseData.checkout_url
+
+                            // Check for the payment status before updating Firestore
+                            if let status = responseData.transaction?.status, status.lowercased() == "paid" {
+                                // Extract Cart ID from the response
+                                let cartIdFromResponse = responseData.transaction?.custom_id ?? ""
+                                
+                                // Call the function to update Firestore for paid cart item
+                                self?.updateFirestoreForPaidCartItem(cartId: cartIdFromResponse)
+                            }
                         }
                     } catch {
                         print("Error decoding response: \(error)")
@@ -130,13 +180,33 @@ class PaymentViewModel: ObservableObject {
                     print("Server Error: \(HTTPURLResponse.localizedString(forStatusCode: (response as? HTTPURLResponse)?.statusCode ?? 0))")
                 }
             }
-            
+
             if let error = error {
                 print("Error: \(error.localizedDescription)")
             }
         }
-        
+
         // Start the URLSession task
         task.resume()
+    }
+
+    
+    // Function to update Firestore document to mark cart item as paid
+    private func updateFirestoreForPaidCartItem(cartId: String) {
+        guard let currentUserUID = Auth.auth().currentUser?.uid else {
+            print("Error: User is not logged in.")
+            return
+        }
+        
+        let db = Firestore.firestore()
+        let cartRef = db.collection("Users").document(currentUserUID).collection("cartTransactions").document(cartId)
+        
+        cartRef.updateData(["paid": true]) { error in
+            if let error = error {
+                print("Error updating document: \(error)")
+            } else {
+                print("Document successfully updated")
+            }
+        }
     }
 }
