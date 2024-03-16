@@ -117,77 +117,91 @@ class PaymentViewModel: ObservableObject {
     
     
     private func initiatePaymentRequest() {
-        // URL of your server's /initiate-payment endpoint
-        guard let url = URL(string: "https://payment.everything-intelligence.com/initiate-payment") else {
-            print("Error: Invalid URL")
+        // Obtain Firebase ID token
+        guard let currentUser = Auth.auth().currentUser else {
+            print("Error: User is not logged in.")
             return
         }
+        
+        currentUser.getIDToken { token, error in
+            guard let token = token, error == nil else {
+                print("Error obtaining ID token:", error?.localizedDescription ?? "Unknown error")
+                return
+            }
+            
+            // URL of your server's /initiate-payment endpoint
+            guard let url = URL(string: "https://payment.everything-intelligence.com/initiate-payment") else {
+                print("Error: Invalid URL")
+                return
+            }
 
-        // Print statement for debugging
-        print("Initiating payment request with Cart ID: \(self.cartId)")
+            // Print statement for debugging
+            print("Initiating payment request with Cart ID: \(self.cartId)")
 
-        // Append the Referer header
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            // Append the Firebase ID token to the Authorization header
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization") // Include Firebase ID token
+            
+            // Prepare the request body
+            let requestBody: [String: Any] = [
+                "cartId": self.cartId,
+                "totalAmount": self.totalAmount
+            ]
 
-        // Prepare the request body
-        let requestBody: [String: Any] = [
-            "cartId": cartId,
-            "totalAmount": totalAmount
-        ]
+            // Convert the request body to Data
+            guard let jsonData = try? JSONSerialization.data(withJSONObject: requestBody) else {
+                print("Error: Failed to serialize JSON data")
+                return
+            }
 
-        // Convert the request body to Data
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: requestBody) else {
-            print("Error: Failed to serialize JSON data")
-            return
-        }
+            // Attach the JSON data to the request
+            request.httpBody = jsonData
 
-        // Attach the JSON data to the request
-        request.httpBody = jsonData
+            // Create a URLSession task to send the request
+            let task = URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) in
+                // Handle the response from the server
+                if let data = data {
+                    // Print the raw server response
+                    print("Raw Server Response: \(String(data: data, encoding: .utf8) ?? "")")
 
-        // Create a URLSession task to send the request
-        let task = URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) in
-            // Handle the response from the server
-            if let data = data {
-                // Print the raw server response
-                print("Raw Server Response: \(String(data: data, encoding: .utf8) ?? "")")
+                    // Check for a successful HTTP status code (2xx)
+                    if let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) {
+                        do {
+                            let responseData = try JSONDecoder().decode(PaymentResponse.self, from: data)
+                            print("Server Response: \(responseData)")
 
-                // Check for a successful HTTP status code (2xx)
-                if let httpResponse = response as? HTTPURLResponse, (200..<300).contains(httpResponse.statusCode) {
-                    do {
-                        let responseData = try JSONDecoder().decode(PaymentResponse.self, from: data)
-                        print("Server Response: \(responseData)")
+                            // Set the checkout URL received from the server
+                            DispatchQueue.main.async {
+                                self?.checkoutURL = responseData.checkout_url
 
-                        // Set the checkout URL received from the server
-                        DispatchQueue.main.async {
-                            self?.checkoutURL = responseData.checkout_url
-
-                            // Check for the payment status before updating Firestore
-                            if let status = responseData.transaction?.status, status.lowercased() == "paid" {
-                                // Extract Cart ID from the response
-                                let cartIdFromResponse = responseData.transaction?.custom_id ?? ""
-                                
-                                // Call the function to update Firestore for paid cart item
-                                self?.updateFirestoreForPaidCartItem(cartId: cartIdFromResponse)
+                                // Check for the payment status before updating Firestore
+                                if let status = responseData.transaction?.status, status.lowercased() == "paid" {
+                                    // Extract Cart ID from the response
+                                    let cartIdFromResponse = responseData.transaction?.custom_id ?? ""
+                                    
+                                    // Call the function to update Firestore for paid cart item
+                                    self?.updateFirestoreForPaidCartItem(cartId: cartIdFromResponse)
+                                }
                             }
+                        } catch {
+                            print("Error decoding response: \(error)")
                         }
-                    } catch {
-                        print("Error decoding response: \(error)")
+                    } else {
+                        // Print an error message for non-successful status codes
+                        print("Server Error: \(HTTPURLResponse.localizedString(forStatusCode: (response as? HTTPURLResponse)?.statusCode ?? 0))")
                     }
-                } else {
-                    // Print an error message for non-successful status codes
-                    print("Server Error: \(HTTPURLResponse.localizedString(forStatusCode: (response as? HTTPURLResponse)?.statusCode ?? 0))")
+                }
+
+                if let error = error {
+                    print("Error: \(error.localizedDescription)")
                 }
             }
 
-            if let error = error {
-                print("Error: \(error.localizedDescription)")
-            }
+            // Start the URLSession task
+            task.resume()
         }
-
-        // Start the URLSession task
-        task.resume()
     }
 
     

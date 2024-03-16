@@ -11,9 +11,6 @@ const headers = {
   Referer: 'https://payment.everything-intelligence.com',
 };
 
-let successfulResponseReceived = false;
-let retryTimer;
-
 router.post('/initiate-payment', async (req, res) => {
   try {
     const { cartId, totalAmount } = req.body;
@@ -58,7 +55,7 @@ router.post('/initiate-payment', async (req, res) => {
 
     // Check if the request was successful
     if (success) {
-      const { token = data?.token, expired_at, checkout_url, transaction_id, gateway_code, company_name, currency, payment_method, email } = data;
+      const { token = data?.token, expired_at, checkout_url } = data;
 
       if (token) {
         // Construct the response object based on Yeepay's response
@@ -131,23 +128,18 @@ router.post('/paymentdetail', bodyParser.urlencoded({ extended: true }), async (
 
       // Update Firestore with payment status if not already updated
       const firestore = admin.firestore();
-      const { custom_id: customId } = transaction;
-      const cartTransactionDocRef = firestore.collection('Users').doc('gaRq9qSRlfXTJIveqLbACsIAsXp1')
-        .collection('cartTransactions').doc(customId);
 
-      const cartTransactionDoc = await cartTransactionDocRef.get();
+      // Query Firestore based on custom_id
+      const cartTransactionQuery = firestore.collectionGroup('cartTransactions').where('custom_id', '==', transaction.custom_id);
+      const cartTransactionDocs = await cartTransactionQuery.get();
 
-      if (cartTransactionDoc.exists) {
-        const { paid } = cartTransactionDoc.data();
-        if (!paid) {
-          // Update the 'paid' field to true
-          await cartTransactionDocRef.update({ paid: true });
-          console.log('Firestore updated successfully');
-        } else {
-          console.log('Firestore already updated with paid: true');
-        }
+      if (!cartTransactionDocs.empty) {
+        // Update the 'paid' field to true for each matching document
+        const updates = cartTransactionDocs.docs.map(doc => doc.ref.update({ paid: true }));
+        await Promise.all(updates);
+        console.log('Firestore updated successfully');
       } else {
-        console.error('Document not found for custom_id:', customId);
+        console.error('Document not found for custom_id:', transaction.custom_id);
       }
 
       // Send successful response

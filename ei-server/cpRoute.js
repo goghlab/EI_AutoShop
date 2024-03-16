@@ -59,51 +59,69 @@ function cpRoute(db) {
       });
     }
   });
+  
+ // Route handler for /receive_cart
+router.post('/receive_cart', async (req, res) => {
+  try {
+    console.log('Received request body:', req.body); // Log the received request body
 
-  // Route handler for /receive_cart
-  router.post('/receive_cart', async (req, res) => {
-    try {
-      const { storeId, outUserId, cpCartId, builtAt, items } = req.body;
+    const { storeId, outUserId, cpCartId, builtAt, items } = req.body;
 
-      // Check if required parameters are defined
-      if (!storeId || !outUserId || !cpCartId || !builtAt || !items) {
-        return res.status(400).json({
-          code: '1002',
-          message: 'Invalid parameters for cart information',
-        });
-      }
-
-      // Reference to the user document
-      const userDocRef = db.collection('Users').doc(outUserId);
-
-      // Reference to the "cartTransactions" subcollection
-      const cartTransactionsRef = userDocRef.collection('cartTransactions');
-
-      // Add a new document for the current cart transaction
-      const newTransactionRef = await cartTransactionsRef.add({
-        storeId,
-        cpCartId,
-        builtAt,
-        items,
-    });
-
-      // Respond with success
-      res.json({
-        code: '0000',
-        message: 'Success',
-        transactionId: newTransactionRef.id,
-      });
-    } catch (error) {
-      console.error('Error processing cart information:', error);
-
-      // Handle error and respond with error details
-      res.status(500).json({
-        code: '5000',
-        message: 'Internal server error',
-        errorDetails: error.message,
+    // Check if required parameters are defined
+    if (!storeId || !outUserId || !cpCartId || !builtAt || !items) {
+      return res.status(400).json({
+        code: '1002',
+        message: 'Invalid parameters for cart information',
       });
     }
-  });
+
+    console.log('Extracted parameters:', { storeId, outUserId, cpCartId, builtAt, items }); // Log the extracted parameters
+
+    // Reference to the user document
+    const userDocRef = db.collection('Users').doc(outUserId);
+
+    // Get the user data to extract the uid
+    const userDoc = await userDocRef.get();
+    const userData = userDoc.data();
+
+    // Reference to the "cartTransactions" subcollection
+    const cartTransactionsRef = userDocRef.collection('cartTransactions');
+
+    // Add a new document for the current cart transaction
+    const newTransactionRef = await cartTransactionsRef.add({
+      storeId,
+      cpCartId,
+      builtAt,
+      items,
+      paid: false,
+    });
+
+    // Set the custom_id field to the ID of the newly created subcollection document
+    await newTransactionRef.update({
+      custom_id: newTransactionRef.id,
+    });
+
+    console.log('Transaction added successfully:', newTransactionRef.id); // Log the success message
+
+    // Respond with success
+    res.json({
+      code: '0000',
+      message: 'Success',
+      transactionId: newTransactionRef.id,
+    });
+  } catch (error) {
+    console.error('Error processing cart information:', error);
+
+    // Handle error and respond with error details
+    res.status(500).json({
+      code: '5000',
+      message: 'Internal server error',
+      errorDetails: error.message,
+    });
+  }
+});
+
+
 
   // Route handler for /empty_cart
   router.post('/empty_cart', async (req, res) => {
