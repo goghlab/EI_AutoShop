@@ -16,6 +16,7 @@ struct CartItemDetail: Identifiable {
 struct CartItem: Identifiable {
     let id: String
     var items: [CartItemDetail]
+    var paid: Bool?
     // Add other properties based on your document structure
 }
 
@@ -32,6 +33,7 @@ class CartItemViewModel: ObservableObject {
         let db = Firestore.firestore()
 
         db.collection("Users").document(currentUserUID).collection("cartTransactions")
+            .whereField("paid", isEqualTo: false) // Only fetch unpaid items
             .addSnapshotListener { querySnapshot, error in
                 guard let documents = querySnapshot?.documents else {
                     print("Error fetching documents: \(error!)")

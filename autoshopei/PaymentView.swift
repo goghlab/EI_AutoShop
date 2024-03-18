@@ -1,54 +1,75 @@
 import SwiftUI
+import FirebaseFirestore
+import FirebaseAuth
 
 struct PaymentView: View {
-    let paymentOptions = [
-        "Credit Card",
-        "AliPay",
-        "WeChat Pay",
-        "PayPal",
-        "Google Pay",
-        "Apple Pay"
-    ]
+    @ObservedObject private var cartItemViewModel = CartItemViewModel()
 
     var body: some View {
-        VStack {
-            Text("付款設定")
-                .font(.title)
-                .fontWeight(.bold)
-                .padding()
+        NavigationView {
+            VStack {
+                Text("已付款購物車")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .padding()
+                    .foregroundColor(.black) // Set title color to black
 
-            LazyVGrid(columns: Array(repeating: GridItem(), count: 2), spacing: 20) {
-                ForEach(paymentOptions, id: \.self) { option in
-                    PaymentOptionView(paymentOption: option)
+                List(cartItemViewModel.cartItems.filter { $0.paid == true }) { item in // Modify the filter condition here
+                    PaymentCartItemView(cartItem: item)
+                        .background(Color.white)
                 }
-            }
-            .padding()
+                .listStyle(InsetListStyle())
+                .padding()
+                .background(Color.white) // Set background color to white for the entire list
 
-            Spacer()
+                Spacer()
+            }
+            .onAppear {
+                // Fetch paid cart transactions for the current user
+                self.cartItemViewModel.fetchCartTransactionsForCurrentUser()
+            }
+            .background(Color.white) // Set background color to white for the entire view
+            .navigationBarTitleDisplayMode(.inline)
+            .foregroundColor(.black) // Set title color to black
         }
     }
 }
 
-struct PaymentOptionView: View {
-    var paymentOption: String
+struct PaymentCartItemView: View {
+    var cartItem: CartItem
 
     var body: some View {
-        VStack {
-            Image(systemName: "creditcard.fill") // You can use appropriate icons
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 50, height: 50)
-                .padding()
-
-            Text(paymentOption)
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .multilineTextAlignment(.center)
+        VStack(alignment: .leading) {
+            Text("購物車ID: \(cartItem.id)")
+                .font(.headline)
+                .fontWeight(.bold)
+                .foregroundColor(.black) // Set text color to black
+            
+            ForEach(cartItem.items) { item in
+                PaymentCartItemDetailView(cartItemDetail: item)
+            }
         }
-        .frame(maxWidth: .infinity)
+        .padding()
         .background(Color.white)
         .cornerRadius(10)
         .shadow(radius: 3)
+    }
+}
+
+struct PaymentCartItemDetailView: View {
+    var cartItemDetail: CartItemDetail
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading) {
+                Text("UPC: \(cartItemDetail.upc)")
+                Text("Quantity: \(cartItemDetail.quantity)")
+                Text("Price: \(cartItemDetail.price)")
+            }
+            Spacer()
+            Text("Subtotal: \(cartItemDetail.subtotal)")
+        }
+        .padding(.horizontal)
     }
 }
 
